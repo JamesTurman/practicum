@@ -6,7 +6,7 @@ Start up isntructions
 1. download latest chrome driver at link below
 https://sites.google.com/a/chromium.org/chromedriver/downloads
 2. unzip and copy chromedriver.exe into directory below
-'~\Python27\Scripts'
+'~\Python\Scripts'
 3. navigate to Python directory on command line then run commands below
 pip install pandas
 pip install selenium
@@ -20,6 +20,7 @@ from selenium.webdriver.common.keys import Keys
 import pandas as pd
 from bs4 import BeautifulSoup
 import html5lib as hlib
+
 driver = webdriver.Chrome()
  
 """ 15 origin zip codes from research
@@ -27,17 +28,15 @@ Origin = [14513,90815,94520,77017,75235,33304,63110,
          38116,15203,81003,98108,73179,30307,94128,92101]
 """
 # sample origin and destination for testing
-Origin = [14513,90815]
+Orgin = [14513,90815]
 Dest = [63110,38116]
-packageNum = 1
-packageWeight = 1
 trans = []
-for i in range(len(Origin)):
+for i in range(len(Orgin)):
     for j in range(len(Dest)):
         # navigate to the application home page
         driver.get("https://www.fedex.com/ratefinder/home?cc=US&language=en&locId=express")
         elem = driver.find_element_by_name("origZip")
-        elem.send_keys(Origin[i])
+        elem.send_keys(Orgin[i])
         elem = driver.find_element_by_name("destZip")
         elem.send_keys(Dest[j])
         # most likely dont need this... auto populates at 1
@@ -50,12 +49,25 @@ for i in range(len(Origin)):
         elem = driver.find_element_by_id("quickQuote")
         elem.click() # click to advance 
         # read results after moving to quote page
-        tbl = driver.find_element_by_xpath("//*[@id='content']/div/div/form/table[2]/tbody/tr/td/table[2]/tbody/tr/td[1]/table/tbody/tr[1]/td[2]/table").get_attribute('outerHTML')
-        df  = pd.read_html(tbl)
+        ship_info = driver.find_element_by_xpath("//*[@id='content']/div/div/form/table[2]/tbody/tr/td/table[1]/tbody/tr[4]/td[2]/table/tbody/tr[1]/td/table/tbody/tr[4]/td[2]/b").get_attribute('innerHTML')
+        first_overNight = driver.find_element_by_xpath("//*[@id='FIRST_OVERNIGHT_dateTime0']").get_attribute('innerHTML')
+        priority_overNight = driver.find_element_by_xpath("//*[@id='PRIORITY_OVERNIGHT_dateTime1']").get_attribute('innerHTML')
+        standard_overNight = driver.find_element_by_xpath("//*[@id='STANDARD_OVERNIGHT_dateTime2']").get_attribute('innerHTML')
+        twoday_AM = driver.find_element_by_xpath("//*[@id='FEDEX_2_DAY_AM_dateTime3']").get_attribute('innerHTML')
+        twoday = driver.find_element_by_xpath("//*[@id='FEDEX_2_DAY_dateTime4']").get_attribute('innerHTML')
+        express_saver = driver.find_element_by_xpath("//*[@id='FEDEX_EXPRESS_SAVER_dateTime5']").get_attribute('innerHTML')
+        ground = driver.find_element_by_xpath("//*[@id='FEDEX_GROUND_dateTime6']").get_attribute('innerHTML')
+        origin = Orgin[i]
+        destination = Dest[j]
+        # append to data frame "trans"
+        df = pd.DataFrame([[origin,destination,ship_info,first_overNight,
+                               priority_overNight,standard_overNight,twoday_AM,
+                               twoday,express_saver,ground]],
+                     columns=['origin','destination','ship_info',
+                     'first_overnight','priority_overnight','standard_overnight',
+                     'twoday_AM','twoday','express_saver','ground'])
         trans.append(df)
-        trans = pd.concat(trans,axis=1)
         
-        
-        
-        
-        
+
+driver.close()   
+pd.concat(trans).to_csv('FedEx.csv')
