@@ -21,15 +21,16 @@ from selenium.webdriver.common.keys import Keys
 import pandas as pd
 from bs4 import BeautifulSoup
 import html5lib as hlib
-driver = webdriver.Chrome() 
-""" 15 origin zip codes from research
+from selenium.common.exceptions import NoSuchElementException
+
 Origin = [14513,90815,94520,77017,75235,33304,63110,
          38116,15203,81003,98108,73179,30307,94128,92101]
-"""
-# sample origin and destination for testing
-Origin = [14513,90815]
-Dest = [63110,38116]
+Dest = pd.read_csv('destSample1.csv')
+Dest = Dest['zip'].values.astype(str).tolist()
 Trans = []
+
+driver = webdriver.Chrome() 
+
 for i in range(len(Origin)):
     for j in range(len(Dest)):
         # navigate to page
@@ -48,13 +49,41 @@ for i in range(len(Origin)):
         elem = driver.find_element_by_name("ctc_submit")
         elem.send_keys(Keys.RETURN)
         # find result table by xpath 
-        nd_early_air = elem.find_element_by_xpath("//*[@id='servicerow0']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
-        nd_air = elem.find_element_by_xpath("//*[@id='servicerow1']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
-        nd_air_saver = elem.find_element_by_xpath("//*[@id='servicerow2']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
-        two_day_air_am = elem.find_element_by_xpath("//*[@id='servicerow3']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
-        two_day_air = elem.find_element_by_xpath("//*[@id='servicerow4']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
-        three_day_select = elem.find_element_by_xpath("//*[@id='servicerow5']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
-        ground = elem.find_element_by_xpath("//*[@id='servicerow6']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        try:
+            nd_early_air = elem.find_element_by_xpath("//*[@id='servicerow0']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            nd_early_air = 0
+            
+        try:
+            nd_air = elem.find_element_by_xpath("//*[@id='servicerow1']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            nd_air = 0
+            
+        try:
+            nd_air_saver = elem.find_element_by_xpath("//*[@id='servicerow2']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            nd_air_saver = 0
+        
+        try:
+            two_day_air_am = elem.find_element_by_xpath("//*[@id='servicerow3']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            two_day_air_am = 0
+            
+        try:
+            two_day_air = elem.find_element_by_xpath("//*[@id='servicerow4']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            two_day_air = 0
+        
+        try:
+            three_day_select = elem.find_element_by_xpath("//*[@id='servicerow5']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            three_day_select = 0
+        
+        try:
+            ground = elem.find_element_by_xpath("//*[@id='servicerow6']/td[2]/dl/dt/span/strong").get_attribute('innerHTML')
+        except NoSuchElementException:
+            ground = 0
+        
         origin = Origin[i]
         destination = Dest[j]
         # assign to data frame 
