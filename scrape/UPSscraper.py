@@ -7,7 +7,8 @@ Start up isntructions
 1. download latest chrome driver at link below
 https://sites.google.com/a/chromium.org/chromedriver/downloads
 2. unzip and copy chromedriver.exe into directory below
-'~\Python\Scripts'
+'~\Python27
+\Scripts'
 3. navigate to Python directory on command line then run commands below
 pip install pandas
 pip install selenium
